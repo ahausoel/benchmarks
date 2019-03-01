@@ -2,9 +2,10 @@ import sys, os
 sys.path.append(os.getcwd() + '/../common')
 from util import *
 
-from pytriqs.gf import Gf, MeshImFreq, iOmega_n, inverse
+from pytriqs.gf import Gf, MeshImFreq, iOmega_n, inverse, MeshImTime
 from pytriqs.operators import c, c_dag, n
 from pytriqs.operators.util.hamiltonians import h_int_kanamori
+from pytriqs.gf.tools import conjugate
 from itertools import product
 from numpy import matrix, array, diag, eye
 from numpy.linalg import inv
@@ -78,3 +79,11 @@ for bl, iw in product(spin_names, iw_mesh):
 G0_iw = Delta.copy()
 G0_iw['up'] << inverse(iOmega_n - h_0_mat - Delta['up']) # FIXME Should work for BlockGf
 G0_iw['dn'] << inverse(iOmega_n - h_0_mat - Delta['dn'])
+
+# ==== Hybridization Function in tau ====
+n_tau = 10001
+tau_mesh = MeshImTime(beta, 'Fermion', n_tau)
+from pytriqs.gf import Fourier
+Delta_tau = BlockGf(mesh=tau_mesh, gf_struct=gf_struct)
+### be careful, conjugate is only correct for real Delta(tau)
+Delta_tau << Fourier(conjugate(Delta))
